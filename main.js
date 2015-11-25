@@ -1,6 +1,6 @@
 var horizon = 200;
 var gameTime = 8;
-var hourL = 100;
+var hourL = 60000;
 var frameTime = 0;
 var lastFrame = 0;
 var drawFrame = false;
@@ -10,25 +10,25 @@ var orbAngle = 0;
 var paused = false;
 var lines;
 var lastLine = 0;
-var lineChance = 1/150;
+var lineChance = 1/50;
 var lineLife = 60;
-var curLine = "";
+var liveLines = Array();
 
 function setup(){
-createCanvas(600,400);
-background(255);
-
-sunset = [color(0,102,204),color(204,153,255),color(255,0,102)];
-night = [color(0),color(0),color(128,0,64)];
-sunrise = [color(0,153,204),color(204,153,255),color(255,204,204)];
-day = [color(102,204,255),color(153,204,255),color(204,255,255)];
-ground = [color(200,255,200),color(64,255,64),color(64,255,64)];
-lines = ["...","CUBE GOOD HORSE?","CUBE GO FAST?","CUBE BAD","CUBE GET A PUSH?","CUBE NOT FAST","CUBE NO GO GOOD","OTHER HORSE PULL CUBE?","CUBE NEED A PUSH","CUBE WIN RACE?","OATS","NO OATS?","...","CUBE TRY CUBE'S BEST","CUBE TRY HARD THIS TIME","CUBE TRY HARDER","CUBE IN THE LEAD?","CUBE TIRED FROM TRYING"];
-textSize(16);
-textAlign(CENTER);
-drawSky();
-drawGround();
-drawCube(width/2-50,height-200,100,150,25,125);
+  createCanvas(600,400);
+  background(255);
+  sunset = [color(0,150,200),color(224,153,255),color(255,224,224)];
+  night = [color(0),color(0),color(128,0,64)];
+  sunrise = [color(0,153,204),color(204,153,255),color(255,204,204)];
+  day = [color(102,204,255),color(153,204,255),color(204,255,255)];
+  ground = [color(200,255,200),color(64,255,64),color(64,255,64)];
+  lines = ["...","CUBE GOOD HORSE?","CUBE GO FAST?","CUBE BAD","CUBE GET A PUSH?","CUBE NOT FAST","CUBE NO GO GOOD","OTHER HORSE PULL CUBE?","CUBE NEED A PUSH","CUBE WIN RACE?","OATS","NO OATS?","...","CUBE TRY CUBE'S BEST","CUBE TRY HARD THIS TIME","CUBE TRY HARDER","CUBE IN THE LEAD?","CUBE TIRED FROM TRYING"];
+  textSize(16);
+  textAlign(CENTER);
+  drawSky();
+  drawGround();
+  drawCube(width/2-50,height-200,100,150,25,125);
+  drawFence(height+15,120,60,8);
 }
 
 function draw(){
@@ -45,31 +45,48 @@ function draw(){
     drawSky();
 	drawGround();
 	drawCube(width/2-50,height-200,100,150,25,125);
-	if(random()<=lineChance && curLine==""){
-      lastLine = 0;
-	  curLine = lines[floor(random(lines.length))];
-	  drawLine();
+	drawFence(height+15,120,60,8);
+	if(random()<=lineChance && lastLine>=30){
+      var curLine = {};
+	  curLine.age = lineLife;
+	  curLine.x = random(-100,100);
+	  curLine.y = random(0,-200);
+	  curLine.line = lines[floor(random(lines.length))];
+	  liveLines.push(curLine);
+	  lastLine = 0;
 	}
-	else if(curLine!="" && lastLine<lineLife){
-	  drawLine();
-	}
-	else{
-	  curLine = "";
+	else if(liveLines.length>0){
+	  for(var i = 0;i<liveLines.length;i++){
+		  liveLines[i].age--;
+		  if(liveLines[i].age>0){
+		    drawLine(liveLines[i]);
+		  }
+	  }
+	  while(liveLines.length>0 && liveLines[liveLines.length-1].age<0){
+	    liveLines.pop();
+	  }
 	}
 	lastLine++;
   }
 }
 
-function drawLine(){
+function drawLine(aLine){
 	push();
-	  translate(width/2, height-50);
-	  stroke(255,((lineLife-lastLine)/lineLife)*255);
+	  translate(width/2+aLine.x, height-50+aLine.y);
+	  stroke(255,(aLine.age/lineLife)*255);
 	  strokeWeight(2);
-	  fill(0,0,200,((lineLife-lastLine)/lineLife)*255);
-	  rect(-(textWidth(curLine)/2)-5,0,textWidth(curLine)+10,32);
+	  fill(0,0,200,(aLine.age/lineLife)*255);
+	  rect(-(textWidth(aLine.line)/2)-5,0,textWidth(aLine.line)+10,32);
 	  noStroke();
-	  fill(255,((lineLife-lastLine)/lineLife)*255);
-	  text(curLine,0,22);
+	  if(-100 - aLine.y >= 0){
+	//    triangle(-aLine.x,-100 - aLine.y,-10,32,10,32); 
+	  }
+	  else{
+	 //   triangle(-aLine.x,-100 - aLine.y,-10,-2,10,-2); 
+	  }
+	  fill(255,(aLine.age/lineLife)*255);
+	  text(aLine.line,0,22);
+
 	pop();
 }
 
@@ -126,15 +143,17 @@ function drawSky(){
   else{
     pastRise = (gameTime<6) ? gameTime + ((millis()-lastHour)/hourL) + 6 : gameTime + ((millis()-lastHour)/hourL) - 18;
   }
+
+  push();
   orbAngle = map(pastRise,0,12,PI/8,-PI - (PI/8));
   fill(orbColor);
   stroke(color(255,32));
-  strokeWeight(15);
-  push();
+  strokeWeight(15 + (2*sin(frameTime/12*PI)));
   translate(width/2.0,horizon);
   rotate(orbAngle,0);
   translate((width/2)-100,0);
   ellipse(0,0,50,50);
+  strokeWeight(1);
   pop();
   
 }
@@ -158,9 +177,9 @@ function drawGround(){
 	  drawGradient(0,horizon,width,height-horizon,blendGradient(ground,color(100),(.75 * (curTime/4)) ));
   }
   pop();
-  drawFence(horizon,30,10,2);
+  drawFence(horizon+5,30,10,2);
   drawTrack(horizon+10,20);
-  drawFence(horizon+60,60,30,4);
+  drawFence(horizon+50,60,30,4);
   drawTrack(horizon+70,120);
 }
 
@@ -244,5 +263,4 @@ function drawGradient(x,y,w,h,stops){
 }
 
 function mousePressed(){
-  console.log("GT: " + gameTime + ","+ frameTime);
 }
