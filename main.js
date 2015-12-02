@@ -13,6 +13,10 @@ var lastLine = 0;
 var lineChance = 1/50;
 var lineLife = 60;
 var liveLines = Array();
+var gameDate = new Date();
+var BDAY_MONTH = 11;
+var BDAY_DATE = 1;
+
 
 function setup(){
   createCanvas(600,400);
@@ -31,11 +35,13 @@ function setup(){
   drawFence(height+15,120,60,8);
 }
 
+
 function draw(){
   if(!paused){
     if(millis()-lastHour > hourL){
 	  lastHour = millis();
 	  gameTime= (gameTime+1) % 24;
+	  gameDate.setDate(gameDate.getDate() + 1);
     }
   }
   
@@ -52,6 +58,9 @@ function draw(){
 	  curLine.x = random(-100,100);
 	  curLine.y = random(0,-200);
 	  curLine.line = lines[floor(random(lines.length))];
+	  if (gameDate.getMonth()==BDAY_MONTH && gameDate.getDate()==BDAY_DATE){
+	      curLine.line += " (+GLUE BONUS)"
+	  }
 	  liveLines.push(curLine);
 	  lastLine = 0;
 	}
