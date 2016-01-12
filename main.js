@@ -1,3 +1,5 @@
+var cwidth = 600;
+var cheight = 400;
 var horizon = 200;
 var gameTime = 8;
 var hourL = 60000;
@@ -16,7 +18,7 @@ var liveLines = Array();
 var gameDate = new Date();
 var BDAY_MONTH = 11;
 var BDAY_DATE = 1;
-
+var textMode = 0;
 
 function setup(){
   createCanvas(windowWidth-20,windowHeight-20);
@@ -34,11 +36,12 @@ function setup(){
 
 function windowResized(){
   resizeCanvas(windowWidth-20,windowHeight-20);
+  textMode = 1;
 }
 
 function drawScene(){
   push();
-    scale(width/600,height/400);
+    scale(width/cwidth,height/cheight);
     drawSky();
     drawGround();
     drawCube(250,200,100,150,25,125);
@@ -88,11 +91,13 @@ function draw(){
 
 function drawLine(aLine){
 	push();
-	  translate(width/2+aLine.x, height-50+aLine.y);
+    scale(width/cwidth,height/cheight);
+	  translate(cwidth/2+aLine.x, cheight-50+aLine.y);
 	  stroke(255,(aLine.age/lineLife)*255);
 	  strokeWeight(2);
 	  fill(0,0,200,(aLine.age/lineLife)*255);
-	  rect(-(textWidth(aLine.line)/2)-5,0,textWidth(aLine.line)+10,32);
+    var textW = textWidth(aLine.line);
+	    rect(-(textW/2)-5,0,textW+10,32);
 	  noStroke();
 	  if(-100 - aLine.y >= 0){
 	//    triangle(-aLine.x,-100 - aLine.y,-10,32,10,32); 
@@ -101,7 +106,12 @@ function drawLine(aLine){
 	 //   triangle(-aLine.x,-100 - aLine.y,-10,-2,10,-2); 
 	  }
 	  fill(255,(aLine.age/lineLife)*255);
-	  text(aLine.line,0,22);
+    if(textMode===0){
+      text(aLine.line,0,22);
+    }
+    else{
+      text(aLine.line,-(textW/2),22);
+    }
 
 	pop();
 }
@@ -150,7 +160,7 @@ function drawSky(){
   	curSky = night;
 	console.log(gameTime);
   }
-  drawGradient(0,0,width,horizon,curSky);
+  drawGradient(0,0,cwidth,horizon,curSky);
   var orbColor = (gameTime>=6 && gameTime<18) ? color(255,255,200) : color(255);
   var pastRise;
   if(gameTime>=6 && gameTime<18){
@@ -165,9 +175,9 @@ function drawSky(){
   fill(orbColor);
   stroke(color(255,32));
   strokeWeight(15 + (2*sin(frameTime/12*PI)));
-  translate(width/2.0,horizon);
+  translate(cwidth/2.0,horizon);
   rotate(orbAngle,0);
-  translate((width/2)-100,0);
+  translate((cwidth/2)-100,0);
   ellipse(0,0,50,50);
   strokeWeight(1);
   pop();
@@ -179,18 +189,18 @@ function drawGround(){
   noStroke();
   
   if(gameTime>=8 && gameTime <=16){
- 	 drawGradient(0,horizon,width,height-horizon,ground);
+ 	 drawGradient(0,horizon,cwidth,cheight-horizon,ground);
   }
   else if(gameTime<=4 || gameTime >=20){
-	drawGradient(0,horizon,width,height-horizon,blendGradient(ground,color(100),0.75));
+	drawGradient(0,horizon,cwidth,cheight-horizon,blendGradient(ground,color(100),0.75));
   }
   else if(gameTime<8){
 	  var curTime = gameTime + ( (millis()-lastHour) / hourL) - 4;
-	  drawGradient(0,horizon,width,height-horizon,blendGradient(ground,color(100),0.75 - (.75 * (curTime/4)) ));
+	  drawGradient(0,horizon,cwidth,cheight-horizon,blendGradient(ground,color(100),0.75 - (.75 * (curTime/4)) ));
   }
   else if(gameTime>16){
 	  var curTime = gameTime + ( (millis()-lastHour) / hourL) - 16;
-	  drawGradient(0,horizon,width,height-horizon,blendGradient(ground,color(100),(.75 * (curTime/4)) ));
+	  drawGradient(0,horizon,cwidth,cheight-horizon,blendGradient(ground,color(100),(.75 * (curTime/4)) ));
   }
   pop();
   drawFence(horizon+5,30,10,2);
@@ -220,7 +230,7 @@ function drawTrack(y,theight){
   
   fill(tcolor);
   noStroke();
-  rect(0,0,width,theight);
+  rect(0,0,cwidth,theight);
   pop();
 }
 
@@ -230,8 +240,8 @@ function drawFence(y,fdelta,fheight,fwidth){
    translate(0,y);
    noStroke();
    fill(fcolor);
-   rect(0,-fheight,width,fwidth);
-   for(var i = fdelta/2;i<width;i+=fdelta){
+   rect(0,-fheight,cwidth,fwidth);
+   for(var i = fdelta/2;i<cwidth;i+=fdelta){
 	 rect(i,0,fwidth/2,-fheight);
    }
   pop();
