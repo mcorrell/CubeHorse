@@ -19,7 +19,7 @@ var BDAY_DATE = 1;
 
 
 function setup(){
-  createCanvas(600,400);
+  createCanvas(windowWidth-20,windowHeight-20);
   background(255);
   sunset = [color(0,150,200),color(224,153,255),color(255,224,224)];
   night = [color(0),color(0),color(128,0,64)];
@@ -29,12 +29,22 @@ function setup(){
   lines = ["...","CUBE GOOD HORSE?","CUBE GO FAST?","CUBE BAD","CUBE GET A PUSH?","CUBE NOT FAST","CUBE NO GO GOOD","OTHER HORSE PULL CUBE?","CUBE NEED A PUSH","CUBE WIN RACE?","OATS","NO OATS?","...","CUBE TRY CUBE'S BEST","CUBE TRY HARD THIS TIME","CUBE TRY HARDER","CUBE IN THE LEAD?","CUBE TIRED FROM TRYING"];
   textSize(16);
   textAlign(CENTER);
-  drawSky();
-  drawGround();
-  drawCube(width/2-50,height-200,100,150,25,125);
-  drawFence(height+15,120,60,8);
+  drawScene();
 }
 
+function windowResized(){
+  resizeCanvas(windowWidth-20,windowHeight-20);
+}
+
+function drawScene(){
+  push();
+    scale(width/600,height/400);
+    drawSky();
+    drawGround();
+    drawCube(250,200,100,150,25,125);
+    drawFence(415,120,60,8);
+  pop();
+}
 
 function draw(){
   if(!paused){
@@ -47,35 +57,32 @@ function draw(){
   
   if(millis()-lastFrame > 33){
     lastFrame = millis();
-	frameTime = (frameTime + 1) % 24;
-    drawSky();
-	drawGround();
-	drawCube(width/2-50,height-200,100,150,25,125);
-	drawFence(height+15,120,60,8);
-	if(random()<=lineChance && lastLine>=30){
+	  frameTime = (frameTime + 1) % 24;
+    drawScene();
+	  if(random()<=lineChance && lastLine>=30){
       var curLine = {};
-	  curLine.age = lineLife;
-	  curLine.x = random(-100,100);
-	  curLine.y = random(0,-200);
-	  curLine.line = lines[floor(random(lines.length))];
-	  if (gameDate.getMonth()==BDAY_MONTH && gameDate.getDate()==BDAY_DATE){
+	    curLine.age = lineLife;
+	    curLine.x = random(-100,100);
+	    curLine.y = random(0,-200);
+	    curLine.line = lines[floor(random(lines.length))];
+	    if (gameDate.getMonth()==BDAY_MONTH && gameDate.getDate()==BDAY_DATE){
 	      curLine.line += " (+GLUE BONUS)"
+	    }
+	    liveLines.push(curLine);
+      lastLine = 0;
 	  }
-	  liveLines.push(curLine);
-	  lastLine = 0;
-	}
-	else if(liveLines.length>0){
-	  for(var i = 0;i<liveLines.length;i++){
-		  liveLines[i].age--;
-		  if(liveLines[i].age>0){
-		    drawLine(liveLines[i]);
-		  }
-	  }
-	  while(liveLines.length>0 && liveLines[liveLines.length-1].age<0){
-	    liveLines.pop();
-	  }
-	}
-	lastLine++;
+	  else if(liveLines.length>0){
+	    for(var i = 0;i<liveLines.length;i++){
+		    liveLines[i].age--;
+		    if(liveLines[i].age>0){
+		      drawLine(liveLines[i]);
+		    }
+	    }
+	    while(liveLines.length>0 && liveLines[liveLines.length-1].age<0){
+	      liveLines.pop();
+	    }
+    }
+	  lastLine++;
   }
 }
 
